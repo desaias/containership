@@ -1,6 +1,6 @@
 {
   "name": "containership",
-  "version": "1.6.1-0",
+  "version": "1.6.1",
   "description": "A simple container management platform",
   "main": "index.js",
   "scripts": {
