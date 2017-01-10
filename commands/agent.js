@@ -2,8 +2,9 @@
 
 const pkg = require('../package.json');
 
-const _ = require('lodash');
 const fs = require('fs');
+const _keys = require('lodash.keys');
+const _pick = require('lodash.pick');
 
 const PID_FILE = '/var/run/containership.pid';
 
@@ -25,8 +26,8 @@ module.exports = {
 
                             options.version = pkg.version;
                             options.mode = options.mode;
-                            core.scheduler.load_options(_.pick(options, _.keys(core.scheduler.options)));
-                            core.api.load_options(_.pick(options, _.keys(core.api.options)));
+                            core.scheduler.load_options(_pick(options, _keys(core.scheduler.options)));
+                            core.api.load_options(_pick(options, _keys(core.api.options)));
                             core.load_options(options);
                             core.initialize();
                         });

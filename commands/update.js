@@ -1,7 +1,7 @@
 'use strict';
 
 const child_process = require('child_process');
-const _ = require('lodash');
+const _has = require('lodash.has');
 
 module.exports = {
 
@@ -24,7 +24,7 @@ module.exports = {
                         let message = ['Updating Containership to'];
                         let args = ['install', '-g'];
 
-                        if(_.has(options, 'tag')) {
+                        if(_has(options, 'tag')) {
                             args.push(`containership@${options.tag}`);
                             message = `${message} version ${options.tag}`;
                         } else {

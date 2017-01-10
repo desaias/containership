@@ -4,12 +4,16 @@ const config = require('../lib/config');
 const utils = require('../lib/utils');
 
 const fs = require('fs');
-const _ = require('lodash');
 const npm = require('npm');
 const request = require('request');
 const flat = require('flat');
 const async = require('async');
 const mkdirp = require('mkdirp');
+const _forEach = require('lodash.foreach');
+const _has = require('lodash.has');
+const _keys = require('lodash.keys');
+const _omit = require('lodash.omit');
+const _sortBy = require('lodash.sortby');
 
 module.exports = {
 
@@ -38,7 +42,7 @@ module.exports = {
                                 utils.println([ ['%-40s', 'PLUGIN'], ['%-20s', 'VERSION'] ]);
 
                                 try {
-                                    _.forEach(data.dependencies, (plugin, name) => {
+                                    _forEach(data.dependencies, (plugin, name) => {
                                         if(name.indexOf('containership.plugin.') === 0) {
                                             name = name.substring(21, name.length);
                                         }
@@ -77,19 +81,19 @@ module.exports = {
                                 'unsafe-perm': true
                             }, () => {
                                 let plugins = [];
-                                if(_.has(options, 'plugin')) {
+                                if(_has(options, 'plugin')) {
                                     const regex = new RegExp(options.plugin, 'g');
-                                    _.forEach(_.keys(authorized_plugins), (name) => {
+                                    _forEach(_keys(authorized_plugins), (name) => {
                                         if(regex.test(name)) {
                                             plugins.push(name);
                                         }
                                     });
                                 } else {
-                                    plugins = _.keys(authorized_plugins);
+                                    plugins = _keys(authorized_plugins);
                                 }
 
                                 utils.println([ ['%-40s', 'PLUGIN'], ['%-100s', 'DESCRIPTION'] ]);
-                                _.forEach(_.sortBy(plugins), (name) => {
+                                _forEach(_sortBy(plugins), (name) => {
                                     utils.println([ ['%-40s', name], ['%-100s', authorized_plugins[name].description] ]);
                                 });
                             });
@@ -115,7 +119,7 @@ module.exports = {
                             name = name.substring(21, name.length);
                         }
 
-                        const config = _.omit(options, ['_', '0', 'plugin', 'subcommand']);
+                        const config = _omit(options, ['_', '0', 'plugin', 'subcommand']);
 
                         fs.writeFile(`${process.env.HOME}/.containership/${name}.json`, JSON.stringify(flat.unflatten(config), null, 2), (err) => {
                             if(err) {
@@ -156,7 +160,7 @@ module.exports = {
                             }, () => {
                                 async.each(options.plugin, (plugin, callback) => {
                                     // if authorized plugin, set the source
-                                    if(_.has(authorized_plugins, plugin)) {
+                                    if(_has(authorized_plugins, plugin)) {
                                         plugin = authorized_plugins[plugin].source;
                                     }
 
@@ -201,7 +205,7 @@ module.exports = {
                             }, () => {
                                 async.each(options.plugin, function(plugin, callback) {
                                     // if authorized plugin, set the source
-                                    if(_.has(authorized_plugins, plugin)) {
+                                    if(_has(authorized_plugins, plugin)) {
                                         plugin = authorized_plugins[plugin].source;
                                         if(plugin.lastIndexOf('/') != -1) {
                                             plugin = plugin.substring(plugin.lastIndexOf('/') + 1, plugin.length);
@@ -247,7 +251,7 @@ module.exports = {
                                 prefix: PLUGINS_DIR,
                                 'unsafe-perm': true
                             }, () => {
-                                if(_.has(authorized_plugins, options.plugin)) {
+                                if(_has(authorized_plugins, options.plugin)) {
                                     options.plugin = authorized_plugins[options.plugin].source;
                                 }
 

@@ -3,7 +3,10 @@
 const config = require('../lib/config');
 const utils = require('../lib/utils');
 
-const _ = require('lodash');
+const _forEach = require('lodash.foreach');
+const _isEmpty = require('lodash.isempty');
+const _omit = require('lodash.omit');
+
 
 module.exports = {
 
@@ -32,14 +35,14 @@ module.exports = {
                     },
 
                     callback: (options) => {
-                        options = _.omit(options, ['_', '0']);
-                        if(_.isEmpty(options)) {
-                            _.forEach(_.omit(config.config, 'middleware'), (value, key) => {
+                        options = _omit(options, ['_', '0']);
+                        if(_isEmpty(options)) {
+                            _forEach(_omit(config.config, 'middleware'), (value, key) => {
                                 utils.println([ ['%-20s', key], ['%-100s', JSON.stringify(value, null, 2)] ]);
                             });
                         } else {
                             config.set(options);
-                            _.forEach(config.config, (value, key) => {
+                            _forEach(config.config, (value, key) => {
                                 utils.println([ ['%-20s', key], ['%-100s', JSON.stringify(value, null, 2)] ]);
                             });
                         }

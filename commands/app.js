@@ -4,7 +4,13 @@ const config = require('../lib/config');
 const request = require('../lib/request');
 const utils = require('../lib/utils');
 
-const _ = require('lodash');
+const _forEach = require('lodash.foreach');
+const _groupBy = require('lodash.groupby');
+const _has = require('lodash.has');
+const _keys = require('lodash.keys');
+const _map = require('lodash.map');
+const _omit = require('lodash.omit');
+const _pluck = require('lodash.pluck');
 const async = require('async');
 const flat = require('flat');
 const C2C = require('c2c');
@@ -102,27 +108,27 @@ const create_edit_options = {
 };
 
 function parse_update_body(options) {
-    if(_.has(options, 'tag')) {
+    if(_has(options, 'tag')) {
         options.tags = utils.parse_tags(options.tag);
         delete options.tag;
     }
 
-    if(_.has(options, 'volume')) {
+    if(_has(options, 'volume')) {
         options.volumes = utils.parse_volumes(options.volume);
         delete options.volume;
     }
 
-    if(_.has(options, 'env-var')) {
+    if(_has(options, 'env-var')) {
         options.env_vars = utils.parse_tags(options['env-var']);
         delete options['env-var'];
     }
 
-    if(_.has(options, 'network-mode')) {
+    if(_has(options, 'network-mode')) {
         options.network_mode = options['network-mode'];
         delete options['network-mode'];
     }
 
-    if(_.has(options, 'container-port')) {
+    if(_has(options, 'container-port')) {
         options.container_port = options['container-port'];
         delete options['container-port'];
     }
@@ -179,7 +185,7 @@ module.exports = {
                                     process.stderr.write(response.body.error);
                                     process.exit(1);
                                 } else {
-                                    process.stdout.write(`Successfully created ${_.keys(json).length} applications!`);
+                                    process.stdout.write(`Successfully created ${_keys(json).length} applications!`);
                                 }
                             });
                         });
@@ -191,7 +197,7 @@ module.exports = {
                     options: create_edit_options,
 
                     callback: (options) => {
-                        options = _.omit(options, ['0', '_']);
+                        options = _omit(options, ['0', '_']);
                         options = parse_update_body(options);
 
                         request.post(`applications/${options.application}`, {}, options, (err, response) => {
@@ -213,7 +219,7 @@ module.exports = {
                     options: create_edit_options,
 
                     callback: (options) => {
-                        options = _.omit(options, ['0', '_']);
+                        options = _omit(options, ['0', '_']);
                         options = parse_update_body(options);
 
                         request.put(`applications/${options.application}`, {}, options, (err, response) => {
@@ -250,8 +256,8 @@ module.exports = {
                                 ['%-6s', 'CONTAINERS'],
                             ]);
 
-                            _.forEach(response.body, (application) => {
-                                const parsed_containers = _.groupBy(application.containers, (container) => container.status);
+                            _forEach(response.body, (application) => {
+                                const parsed_containers = _groupBy(application.containers, (container) => container.status);
 
                                 var loaded_containers = parsed_containers.loaded || [];
                                 utils.println([
@@ -301,19 +307,19 @@ module.exports = {
                                 utils.println();
 
                                 utils.println([ ['%-20s', 'ENV VARS'], ['%-50s', 'NAME'], ['%-50s', 'VALUE'] ]);
-                                _.forEach(response.body.env_vars, (val, key) => {
+                                _forEach(response.body.env_vars, (val, key) => {
                                     utils.println([ ['%-20s', ''], ['%-50s', key], ['%-50s', val] ]);
                                 });
                                 utils.println();
 
                                 utils.println([ ['%-20s', 'TAGS'], ['%-50s', 'NAME'], ['%-50s', 'VALUE'] ]);
-                                _.forEach(flat(response.body.tags), (val, key) => {
+                                _forEach(flat(response.body.tags), (val, key) => {
                                     utils.println([ ['%-20s', ''], ['%-50s', key], ['%-50s', val] ]);
                                 });
                                 utils.println();
 
                                 utils.println([ ['%-20s', 'CONTAINERS'], ['%-50s', 'ID'], ['%-50s', 'HOST'], ['%-20s', 'STATUS'] ]);
-                                _.forEach(response.body.containers, function(container){
+                                _forEach(response.body.containers, function(container){
                                     utils.println([ ['%-20s', ''], ['%-50s', container.id], ['%-50s', container.host], ['%-20s', container.status] ]);
                                 });
                             }
@@ -345,11 +351,11 @@ module.exports = {
                     },
 
                     callback: (options) => {
-                        if(!_.has(options, 'count')) {
+                        if(!_has(options, 'count')) {
                             options.count = 1;
                         }
 
-                        if(_.has(options, 'tag')) {
+                        if(_has(options, 'tag')) {
                             options.tags = utils.parse_tags(options.tag);
                             delete options.tag;
                         } else {
@@ -471,7 +477,7 @@ module.exports = {
                                     strictSSL: config.config.strict_ssl || true
                                 };
 
-                                async.waterfall(_.map(config.config.middleware || [], (middleware) => {
+                                async.waterfall(_map(config.config.middleware || [], (middleware) => {
                                     return function(callback){
                                         middleware(options, callback);
                                     };
@@ -513,13 +519,13 @@ module.exports = {
                                 } else if(response.statusCode == 404) {
                                     return callback(new Error(`Application ${options.application} does not exist!`));
                                 } else if(response.statusCode == 200) {
-                                    return callback(undefined, _.pluck(response.body.containers, 'id'));
+                                    return callback(undefined, _pluck(response.body.containers, 'id'));
                                 }
                             });
                         }
 
                         function fetch_logs() {
-                            _.forEach(options['container-id'], (container_id) => {
+                            _forEach(options['container-id'], (container_id) => {
                                 local_request.get(`logs/${options.application}/containers/${container_id}`, {}, (err, response) => {
                                     if(err || response.statusCode != 200) {
                                         process.stderr.write(`Could not fetch logs for container ${container_id} of application ${options.application}!\n`);
@@ -558,7 +564,7 @@ module.exports = {
                                     process.exit(1);
                                 } else {
                                     process.stdout.write('Please pass any of the following container ids to fetch logs, or pass the --all flag to get logs for every container:\n');
-                                    _.forEach(container_ids, (container_id) => {
+                                    _forEach(container_ids, (container_id) => {
                                         process.stdout.write(`${container_id}\n`);
                                     });
                                 }

@@ -3,8 +3,12 @@
 const request = require('../lib/request');
 const utils = require('../lib/utils');
 
-const _ = require('lodash');
 const flat = require('flat');
+const _forEach = require('lodash.foreach');
+const _has = require('lodash.has');
+const _omit = require('lodash.omit');
+const _parseInt = require('lodash.parseint');
+const _sortBy = require('lodash.sortby');
 
 module.exports = {
 
@@ -33,7 +37,7 @@ module.exports = {
 
                             utils.println(format);
 
-                            _.forEach(_.sortBy(response.body, 'id'), (host) => {
+                            _forEach(_sortBy(response.body, 'id'), (host) => {
                                 const format = [
                                     ['%-40s', host.id],
                                     ['%-40s', host.host_name],
@@ -89,16 +93,16 @@ module.exports = {
                                 utils.println();
 
                                 utils.println([ ['%-20s', 'TAGS'], ['%-50s', 'NAME'], ['%-50s', 'VALUE'] ]);
-                                _.forEach(flat(response.body.tags), (val, key) => {
+                                _forEach(flat(response.body.tags), (val, key) => {
                                     utils.println([ ['%-20s', ''], ['%-50s', key], ['%-50s', val] ]);
                                 });
                                 utils.println();
 
                                 if(response.body.mode === 'follower') {
                                     utils.println([ ['%-20s', 'CONTAINERS'], ['%-40s', 'ID'], ['%-40s', 'APPLICATION'], ['%-20s', 'STATUS'] ]);
-                                    _.forEach(response.body.containers, (container) => {
+                                    _forEach(response.body.containers, (container) => {
                                         used_cpus += parseFloat(container.cpus);
-                                        used_memory += _.parseInt(container.memory) + overhead;
+                                        used_memory += _parseInt(container.memory) + overhead;
                                         utils.println([ ['%-20s', ''], ['%-40s', container.id], ['%-40s', container.application], ['%-20s', container.status] ]);
                                     });
                                     utils.println();
@@ -106,7 +110,7 @@ module.exports = {
                                     used_cpus = used_cpus.toFixed(2);
 
                                     const available_cpus = parseFloat(response.body.cpus) - used_cpus;
-                                    const available_memory = (_.parseInt(response.body.memory) / (1024 * 1024)) - used_memory;
+                                    const available_memory = (_parseInt(response.body.memory) / (1024 * 1024)) - used_memory;
 
                                     utils.println([ ['%-20s', 'AVAILABLE CPUS'], ['%-100s', available_cpus] ]);
                                     utils.println([ ['%-20s', 'USED CPUS'], ['%-100s', used_cpus] ]);
@@ -135,9 +139,9 @@ module.exports = {
                     },
 
                     callback: (options) => {
-                        const config = _.omit(options, ['0', '_', 'host', 'subcommand']);
+                        const config = _omit(options, ['0', '_', 'host', 'subcommand']);
 
-                        if(_.has(config, 'tag')) {
+                        if(_has(config, 'tag')) {
                             config.tags = utils.parse_tags(config.tag);
                             delete config.tag;
                         }
